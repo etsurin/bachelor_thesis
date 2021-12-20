@@ -1,31 +1,58 @@
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import torch
 import numpy as np
+import re
+import string
+
 device = 'cuda'
 model_id = 'gpt2-large'
 model = GPT2LMHeadModel.from_pretrained(model_id).to(device)
 model.eval()
 tokenizer = GPT2Tokenizer.from_pretrained(model_id)
-input="The capital of Japan is"
-target1=' Tokyo'
-target2=' Paris'
-input_ids = tokenizer.encode(input)
-input_ids = torch.tensor(input_ids).to(device)  # [1, seq_len]
-print(input_ids)
-target1_ids = tokenizer.encode(target1)
-target1_ids = torch.tensor(target1_ids).to(device)  # [1, 1]
-print(target1_ids)
-target2_ids = tokenizer.encode(target2)
-target2_ids = torch.tensor(target2_ids).to(device)  # [1, 1]
-print(target2_ids)
-output = model(input_ids,return_dict=True)[0]
-output=output[-1,:]
-print(output.shape)
-predicted_index = torch.argmax(output)
-predicted_text = tokenizer.decode([predicted_index])
-print(predicted_index,predicted_text)
-loss_fct = torch.nn.CrossEntropyLoss()
-print(output.view(-1, output.size(-1)).shape,target1_ids.shape)
-loss = loss_fct(output.view(-1, output.size(-1)),target1_ids)
+def divide_sentences(text):
+    sentence_list = re.split('([.?])',text)
+    sentence_list.append("")
+    sentence_list = ["".join(i) for i in zip(sentence_list[0::2],sentence_list[1::2])]
+    del sentence_list[-1]
+    return len(sentence_list),sentence_list
 
-print(loss)
+
+def get_loss(sentence,encoded=True):
+    #step 1: abcde->abcd:sentence, e:target
+    #step 2: calculate loss
+    if ~encoded:
+        sentence=tokenizer.encode(sentence)
+    input=sentence[:-1]
+    target=sentence[-1:] #list of len=1
+    
+    final_input=torch.tensor(input).to(device)
+    target=torch.tensor(target).to(device)
+    print(final_input,target)
+    output=model(final_input,return_dict=True)[0]
+    output = output[-1,:]
+    loss_fct = torch.nn.CrossEntropyLoss()
+    print(output.view(-1, output.size(-1)).shape, target.shape)
+    loss = loss_fct(output.view(-1, output.size(-1)), target)
+    return loss.cpu().detach()
+
+def get_loss_for_single_sentence(previous_input,sentence):
+    sentence=tokenizer.encode(sentence)
+    length=len(sentence)
+    tmp_loss_list=[]
+    for index in range(len(sentence)):
+        if index==0:
+            continue
+        tmp_word=tokenizer.decode(sentence[index])
+        tmp_word=tmp_word.replace(' ','')
+        if tmp_word in string.punctuation:
+            continue
+        else:
+            tmp_loss=get_loss(previous_input+sentence[:index+1])
+            tmp_loss_list.append(tmp_loss)
+    return tmp_loss_list, np.mean(tmp_loss_list)
+
+
+print(get_loss_for_single_sentence([],'Although she is old, she loves wearing high heels.'))
+
+    
+
