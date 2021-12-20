@@ -52,7 +52,7 @@ def get_loss_for_single_sentence(previous_input,sentence):
     return tmp_loss_list, np.mean(tmp_loss_list)
 
 
-print(get_loss_for_single_sentence([],'Although she is old, she loves wearing high heels.'))
+print(get_loss_for_single_sentence([],'Your sentences'))
 
     
 
