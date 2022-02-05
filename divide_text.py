@@ -1,16 +1,18 @@
 import re
 from test_text import *
 import string
+import spacy
 
 def divide_sentences(text):
-    sentence_list = re.split('([.?])',text)
-    sentence_list.append("")
-    sentence_list = ["".join(i) for i in zip(sentence_list[0::2],sentence_list[1::2])]
-    del sentence_list[-1]
-    return len(sentence_list),sentence_list
+    tool = spacy.load('en_core_web_sm')
+    processed_text = tool(text)
+    sentence_list=[]
+    for sentence in processed_text.sents:
+        sentence_list.append(str(sentence))
+    return sentence_list
 
 def divide_text(text,intervals,write_file=False):
-    _,sentence_list=divide_sentences(text)
+    sentence_list=divide_sentences(text)
     txt=''
     for index,sentence in enumerate(sentence_list):
         if index in intervals:

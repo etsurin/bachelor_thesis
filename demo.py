@@ -3,21 +3,15 @@ from test_text import *
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import torch
 import numpy as np
-import re
 import string
 import matplotlib.pyplot as plt
+from divide_text import *
 
 device = 'cuda'
 model_id = 'gpt2-medium'
 model = GPT2LMHeadModel.from_pretrained(model_id).to(device)
 model.eval()
 tokenizer = GPT2Tokenizer.from_pretrained(model_id)
-def divide_sentences(text):
-    sentence_list = re.split('([.?])',text)
-    sentence_list.append("")
-    sentence_list = ["".join(i) for i in zip(sentence_list[0::2],sentence_list[1::2])]
-    del sentence_list[-1]
-    return len(sentence_list),sentence_list
 
 
 def get_loss(sentence,encoded=True):
