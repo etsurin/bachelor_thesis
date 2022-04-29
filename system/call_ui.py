@@ -60,6 +60,7 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
             self.comboBox.currentIndexChanged.disconnect()
             self.path1 = os.path.dirname(os.path.abspath(self.path1))
             self.update_left()
+            self.text_buffer.clear()
             self.pushButton_2.clicked.connect(lambda:self.return_upper('left'))
             self.comboBox.currentIndexChanged.connect(self.selectionChange_text)
         else:
@@ -67,6 +68,7 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
             self.comboBox_2.currentIndexChanged.disconnect()        
             self.path2 = os.path.dirname(os.path.abspath(self.path2))
             self.update_right()
+            self.summ_buffer.clear()
             self.pushButton_3.clicked.connect(lambda:self.return_upper('right'))
             self.comboBox_2.currentIndexChanged.connect(self.selectionChange_summary)
 
@@ -76,7 +78,13 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
         i=i-1
         if i<self.len_dir_l:  #choose path
             self.path1 = os.path.join(self.path1,self.comboBox.currentText())
+            self.text_buffer.clear()
             self.update_left()
+        else:   #choose file
+            textfile = open(os.path.join(self.path1,self.comboBox.currentText()),'r',encoding = 'utf-8')
+            text = textfile.read()
+            self.text_buffer.setText(text)
+            textfile.close()
         self.comboBox.currentIndexChanged.connect(self.selectionChange_text)
 
     def selectionChange_summary(self,i):
@@ -84,7 +92,13 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
         i=i-1
         if i<self.len_dir_r:  #choose path
             self.path2 = os.path.join(self.path2,self.comboBox_2.currentText())
+            self.summ_buffer.clear()
             self.update_right()
+        else:
+            textfile = open(os.path.join(self.path2,self.comboBox_2.currentText()),'r',encoding = 'utf-8')
+            text = textfile.read()
+            self.summ_buffer.setText(text)
+            textfile.close()            
         self.comboBox_2.currentIndexChanged.connect(self.selectionChange_summary)
       
 

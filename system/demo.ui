@@ -13,6 +13,12 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="locale">
+   <locale language="Chinese" country="China"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
@@ -22,6 +28,12 @@
       <width>161</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Rockwell</family>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>generate</string>
@@ -50,7 +62,14 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QTextBrowser" name="textBrowser_2"/>
+       <widget class="QLabel" name="text_buffer">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -78,7 +97,14 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QTextBrowser" name="textBrowser_3"/>
+       <widget class="QLabel" name="summ_buffer">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -107,7 +133,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>570</y>
+      <y>530</y>
       <width>931</width>
       <height>141</height>
      </rect>
@@ -175,10 +201,15 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>250</y>
-      <width>101</width>
-      <height>16</height>
+      <y>240</y>
+      <width>131</width>
+      <height>21</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Microsoft YaHei</family>
+     </font>
     </property>
     <property name="text">
      <string>text preview</string>
@@ -188,10 +219,15 @@
     <property name="geometry">
      <rect>
       <x>710</x>
-      <y>250</y>
-      <width>121</width>
-      <height>16</height>
+      <y>240</y>
+      <width>131</width>
+      <height>21</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Microsoft YaHei</family>
+     </font>
     </property>
     <property name="text">
      <string>summary preview</string>
