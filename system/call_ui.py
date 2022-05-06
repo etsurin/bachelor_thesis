@@ -1,9 +1,16 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 from ui_demo import Ui_MainWindow
+from init_demo import Ui_Init
 from PyQt5.QtCore import pyqtSignal,Qt
 import os
 import sys
+from utils_ui import *
+import time
+import threading
+
+
+
 def read_dir(path):
     rawlist = os.listdir(path)
     dirlist = list()
@@ -20,6 +27,16 @@ def read_dir(path):
                 filelist.append(file)
     return dirlist,filelist
 
+def load():
+    global tool,compute_metric,tokenizer_G,tokenizer_B,gptmodel,model_c,model_f
+    tool = spacy.load('en_core_web_sm')
+    compute_metric = load_metric("./rouge")
+    tokenizer_G = GPT2Tokenizer.from_pretrained('gpt2-medium')
+    gptmodel = GPT2LMHeadModel.from_pretrained('gpt2-medium')
+    tokenizer_B = BartTokenizer.from_pretrained('BART_c')
+    model_c = BartForConditionalGeneration.from_pretrained('BART_c')
+    model_f = BartForConditionalGeneration.from_pretrained('BART_f')
+
 class MainPageWindow(QMainWindow,Ui_MainWindow):
     def __init__(self,parent=None):
         super(MainPageWindow, self).__init__(parent)
@@ -29,8 +46,19 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
         self.update_left()
         self.update_right()
         self.initUI()
+        self.enable_generate(False)
     
+    def enable_generate(self,flag):
+        if flag:
+            self.pushButton.setText('generate')
+            self.pushButton.setEnabled(True) 
+        else:
+            self.pushButton.setText('empty input')
+            self.pushButton.setEnabled(False)
+
+
     def initUI(self):
+        self.pushButton.clicked.connect(self.generate)
         self.pushButton_2.clicked.connect(lambda:self.return_upper('left'))
         self.pushButton_3.clicked.connect(lambda:self.return_upper('right'))        
 
@@ -72,6 +100,21 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
             self.pushButton_3.clicked.connect(lambda:self.return_upper('right'))
             self.comboBox_2.currentIndexChanged.connect(self.selectionChange_summary)
 
+    def generate(self):
+        text = self.text_buffer.text()
+        text = text.replace('\n','')
+        self.metric.setText('generating ...')
+        if len(self.summ_buffer.text()):
+            generated_summary,rougescore = summary(raw_text = text,tool = tool, compute_metric = compute_metric,tokenizer_G = tokenizer_G,tokenizer_B = tokenizer_B
+            ,gpt_model = gptmodel,model_c = model_c,model_f = model_f,reference = self.summ_buffer.text())
+            self.generated_summary.setText(generated_summary)
+            self.metric.setText(rougescore)
+        else:    
+            generated_summary = summary(raw_text = text,tool = tool, compute_metric = compute_metric,tokenizer_G = tokenizer_G,tokenizer_B = tokenizer_B
+            ,gpt_model = gptmodel,model_c = model_c,model_f = model_f)
+            self.generated_summary.setText(generated_summary)
+            self.metric.setText('finished')
+
 
     def selectionChange_text(self,i):
         self.comboBox.currentIndexChanged.disconnect()
@@ -79,11 +122,13 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
         if i<self.len_dir_l:  #choose path
             self.path1 = os.path.join(self.path1,self.comboBox.currentText())
             self.text_buffer.clear()
+            self.enable_generate(False)
             self.update_left()
         else:   #choose file
             textfile = open(os.path.join(self.path1,self.comboBox.currentText()),'r',encoding = 'utf-8')
             text = textfile.read()
             self.text_buffer.setText(text)
+            self.enable_generate(True)
             textfile.close()
         self.comboBox.currentIndexChanged.connect(self.selectionChange_text)
 
@@ -101,11 +146,35 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
             textfile.close()            
         self.comboBox_2.currentIndexChanged.connect(self.selectionChange_summary)
       
+class Initpage(QMainWindow, Ui_Init):
+    def __init__(self,parent=None):
+        super(Initpage, self).__init__(parent)
+        self.setupUi(self)
+        self.initUI()
 
+    def process(self):
+        while self.progressBar.value()<99:
+            time.sleep(0.54)
+            self.progressBar.setValue(self.progressBar.value() + 1)
+
+    def initUI(self):
+        self.show()
+        load()
+        # do_load = threading.Thread(target = load)
+        # do_count = threading.Thread(target = self.process)
+        # do_load.start()
+        # do_count.start()
+        # do_count.join()
+        # do_load.join()
+        self.close()
+        mainWindow = MainPageWindow()
+        mainWindow.show()
 
 if __name__=='__main__':
+    load()
     app = QApplication(sys.argv)
     mainWindow = MainPageWindow()
     mainWindow.show()
+
     sys.exit(app.exec_())        
 
