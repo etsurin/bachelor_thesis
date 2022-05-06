@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 from ui_demo import Ui_MainWindow
 from init_demo import Ui_Init
-from PyQt5.QtCore import pyqtSignal,Qt
+from PyQt5.QtCore import pyqtSignal,Qt,QThread
 import os
 import sys
 from utils_ui import *
@@ -102,19 +102,24 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
 
     def generate(self):
         text = self.text_buffer.text()
-        text = text.replace('\n','')
-        self.metric.setText('generating ...')
+        self.metric.setText('generating...')
         if len(self.summ_buffer.text()):
-            generated_summary,rougescore = summary(raw_text = text,tool = tool, compute_metric = compute_metric,tokenizer_G = tokenizer_G,tokenizer_B = tokenizer_B
-            ,gpt_model = gptmodel,model_c = model_c,model_f = model_f,reference = self.summ_buffer.text())
-            self.generated_summary.setText(generated_summary)
-            self.metric.setText(rougescore)
-        else:    
-            generated_summary = summary(raw_text = text,tool = tool, compute_metric = compute_metric,tokenizer_G = tokenizer_G,tokenizer_B = tokenizer_B
-            ,gpt_model = gptmodel,model_c = model_c,model_f = model_f)
-            self.generated_summary.setText(generated_summary)
-            self.metric.setText('finished')
+            self.call_generator = generator(text,self.summ_buffer.text())
+        else:
+            self.call_generator = generator(text)
+        self.call_generator.result.connect(self.update_summ)
+        self.call_generator.score.connect(self.update_info)
+        self.call_generator.start()
+        self.call_generator.exec()
 
+    def update_summ(self,result):
+        self.generated_summary.setText(result)
+    
+    def update_info(self,score):
+        if len(score):
+            self.metric.setText(score)
+        else:
+            self.metric.setText('finished')
 
     def selectionChange_text(self,i):
         self.comboBox.currentIndexChanged.disconnect()
@@ -122,12 +127,16 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
         if i<self.len_dir_l:  #choose path
             self.path1 = os.path.join(self.path1,self.comboBox.currentText())
             self.text_buffer.clear()
+            self.generated_summary.clear()
+            self.metric.clear()
             self.enable_generate(False)
             self.update_left()
         else:   #choose file
             textfile = open(os.path.join(self.path1,self.comboBox.currentText()),'r',encoding = 'utf-8')
             text = textfile.read()
             self.text_buffer.setText(text)
+            self.generated_summary.clear()
+            self.metric.clear()
             self.enable_generate(True)
             textfile.close()
         self.comboBox.currentIndexChanged.connect(self.selectionChange_text)
@@ -145,7 +154,23 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
             self.summ_buffer.setText(text)
             textfile.close()            
         self.comboBox_2.currentIndexChanged.connect(self.selectionChange_summary)
-      
+
+
+class generator(QThread):
+    result = pyqtSignal(str)
+    score = pyqtSignal(str)
+    
+    def __init__(self,text,reference=None):
+        super().__init__()
+        self.text = text
+        self.reference = reference
+    
+    def run(self):
+        generated_summary,rougescore = summary(raw_text = self.text,tool = tool, compute_metric = compute_metric,tokenizer_G = tokenizer_G,tokenizer_B = tokenizer_B
+            ,gpt_model = gptmodel,model_c = model_c,model_f = model_f,reference = self.reference)
+        self.result.emit(generated_summary)
+        self.score.emit(rougescore)
+
 class Initpage(QMainWindow, Ui_Init):
     def __init__(self,parent=None):
         super(Initpage, self).__init__(parent)
