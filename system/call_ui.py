@@ -10,7 +10,6 @@ import time
 import threading
 
 
-
 def read_dir(path):
     rawlist = os.listdir(path)
     dirlist = list()
@@ -81,6 +80,8 @@ class MainPageWindow(QMainWindow,Ui_MainWindow):
         self.comboBox.addItems(dirlist_l+filelist_l)
         self.comboBox.currentIndexChanged.connect(self.selectionChange_text)
 
+    def closeEvent(self,event):
+        sys.exit()
 
     def return_upper(self,sender):
         if sender == 'left':
@@ -169,37 +170,62 @@ class generator(QThread):
         generated_summary,rougescore = summary(raw_text = self.text,tool = tool, compute_metric = compute_metric,tokenizer_G = tokenizer_G,tokenizer_B = tokenizer_B
             ,gpt_model = gptmodel,model_c = model_c,model_f = model_f,reference = self.reference)
         self.result.emit(generated_summary)
-        self.score.emit(rougescore)
+        self.score.emit(str(rougescore))
 
+class process(QThread):
+    value = pyqtSignal(int)
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        index = 0
+        while index<99:
+            time.sleep(0.46)
+            index=index+1
+            self.value.emit(index)
+
+class loader(QThread):
+    finished = pyqtSignal(bool)
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        load()
+        self.finished.emit(True)
+        
 class Initpage(QMainWindow, Ui_Init):
     def __init__(self,parent=None):
         super(Initpage, self).__init__(parent)
         self.setupUi(self)
-        self.initUI()
+        self.show()
 
     def process(self):
-        while self.progressBar.value()<99:
-            time.sleep(0.54)
-            self.progressBar.setValue(self.progressBar.value() + 1)
+        self.loader = loader()
+        self.processor = process()
+        self.processor.value.connect(self.setvalue)
+        self.loader.finished.connect(self.update)
+        self.loader.start()
+        self.processor.start()
+        self.processor.exec()
+        self.loader.exec()
 
-    def initUI(self):
-        self.show()
-        load()
-        # do_load = threading.Thread(target = load)
-        # do_count = threading.Thread(target = self.process)
-        # do_load.start()
-        # do_count.start()
-        # do_count.join()
-        # do_load.join()
-        self.close()
-        mainWindow = MainPageWindow()
-        mainWindow.show()
+        
+    def setvalue(self,value):
+        self.progressBar.setValue(value)
+        
+    def update(self,finished):
+        if finished:
+            self.loader.exit()
+            self.processor.exit()
+            self.close()
+            mainWindow = MainPageWindow()
+            mainWindow.show()
+            
+            
 
 if __name__=='__main__':
-    load()
     app = QApplication(sys.argv)
-    mainWindow = MainPageWindow()
-    mainWindow.show()
-
-    sys.exit(app.exec_())        
-
+    mainWindow = Initpage()
+    mainWindow.process()
+    sys.exit(app.exec_())
+  

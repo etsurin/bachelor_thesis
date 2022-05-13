@@ -195,7 +195,7 @@ def get_info_list(tokenizer, sentence_list):
     return output
 
 def summary(raw_text,tool,compute_metric,tokenizer_G,tokenizer_B,gpt_model,model_c,model_f,reference=None):
-    print('****preprocessing****')
+    # print('****preprocessing****')
     logging.set_verbosity_error()
     device = 'cuda'
     global max_length  #global variable for the padding length
@@ -206,7 +206,7 @@ def summary(raw_text,tool,compute_metric,tokenizer_G,tokenizer_B,gpt_model,model
     text,labels = process_one_passage(tokenizer_G,sentence_list)
     infolist = get_info_list(tokenizer_G, sentence_list)
     outputlist = list()
-    print('****calculating loss****')
+    # print('****calculating loss****')
     with torch.no_grad():
         for index,data in enumerate(text):
             input,target = data,labels[index]
@@ -214,18 +214,20 @@ def summary(raw_text,tool,compute_metric,tokenizer_G,tokenizer_B,gpt_model,model
             input=torch.tensor(input,dtype=torch.int64).to(device)
             output = gptmodel(input,labels=target)
             loss=output.loss.cpu().item()
+            target = target.cpu()
+            input = input.cpu()
             # print(loss)
             torch.cuda.empty_cache()
             outputlist.append(loss)
     gptmodel = gptmodel.cpu()
     torch.cuda.empty_cache()
-    print('****dividing text****')
+    # print('****dividing text****')
     divide_indexes = autodivide(outputlist,infolist)
     dividedtext,textlist = divide_text(sentence_list,divide_indexes)
-    print('****coarse stage****')
+    # print('****coarse stage****')
     model_c=model_c.to(device)
     input_list = tokenizer_B(textlist,max_length=1024,padding=True,truncation=True,return_tensors='pt')['input_ids'].to(device)
-    dataloader=torch.utils.data.DataLoader(input_list, batch_size=5,shuffle=False, num_workers=0)
+    dataloader=torch.utils.data.DataLoader(input_list, batch_size=3,shuffle=False, num_workers=0)
     output_list_tmp = list()
     with torch.no_grad():
         for item in dataloader:
@@ -237,21 +239,22 @@ def summary(raw_text,tool,compute_metric,tokenizer_G,tokenizer_B,gpt_model,model
     output_c = ' '.join(summary)
     model_c = model_c.cpu()
     torch.cuda.empty_cache()
-    print('****fine-grained stage****')
+    # print('****fine-grained stage****')
     model_f = model_f.to(device)
     input_f = tokenizer_B(output_c,max_length=1024,return_tensors='pt')['input_ids'].to(device)
     summary_ids = model_f.generate(input_f, num_beams=4, max_length=300, early_stopping=True).cpu()
     summary=[tokenizer_B.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids]
     output = summary[0]
-    print('****finished generating****')
-    print('\nsummary:')
-    print(output)
+    # print('****finished generating****')
+    # print('\nsummary:')
+    # print(output)
     if reference !=None:
         rougescore = rouge(compute_metric,output,reference)
-        print('rougescore:\n',rougescore)
+        # print('rougescore:\n',rougescore)
         return output, rougescore
     else:
-        return output
+        rougescore = ''
+        return output,rougescore
 if __name__=='__main__':
     rawdata = processjson('arxiv_val')[47]
     raw_text = rawdata['description']
