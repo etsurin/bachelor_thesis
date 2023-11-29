@@ -53,10 +53,17 @@ packaging==23.1
 pandas==2.0.1
 Pillow==10.0.0
 pyarrow==12.0.0
+PyQt5==5.15.4
+pyqt5-plugins==5.15.4.2.2
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.10.1
+pyqt5-tools==5.15.4.3.2
 PySocks==1.7.1
 python-dateutil==2.8.2
 pytz==2023.3
 PyYAML==6.0
+qt5-applications==5.15.2.2.2
+qt5-tools==5.15.2.1.2
 regex==2023.5.5
 requests==2.31.0
 responses==0.18.0
