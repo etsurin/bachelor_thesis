@@ -17,7 +17,7 @@ We used PyQt to implement a summarization system.
 It has following functions:
 
 1. Detect any txt file in user's device
-2. Preview the selected txt file and generate summary for the selected text. With pretrained summarization models available at [here](https://drive.google.com/file/d/1OPJpKsPrz751ydDUhWTFucGir8zejVCF/view?usp=drive_link).
+2. Preview the selected txt file and generate summary for the selected text. With pretrained summarization model.
 3. Calculate the rouge score if reference is provided.
 
 ### Run the summarization system
@@ -25,12 +25,11 @@ Set up the environment
 ```
 pip install -r requirements.txt
 ```
-
-Run the following commands
+Enter the system folder
 ```
 cd system
 ```
-Unzip the model files
+Unzip the [model files](https://drive.google.com/file/d/1OPJpKsPrz751ydDUhWTFucGir8zejVCF/view?usp=drive_link) here
 ```
 python call_ui.py
 ```
