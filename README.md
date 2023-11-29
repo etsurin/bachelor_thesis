@@ -8,6 +8,8 @@ We designed an unsupervised topic segmentation algorithm of text using pre-train
 
 We did experiments by reproducing the SUMM^N framework (Now it is [opensourced](https://github.com/psunlpgroup/Summ-N)) and improving it by applying our topic segmentation method. 
 
+Detailed introduction of our proposed method will be soon later.  
+
 ## Development Part
 
 ### Introduction
@@ -20,6 +22,11 @@ It has following functions:
 3. Calculate the rouge score if reference is provided.
 
 ### Run the summarization system
+Set up the environment
+```
+pip install -r requirements.txt
+```
+
 ```
 cd system
 python call_ui.py
