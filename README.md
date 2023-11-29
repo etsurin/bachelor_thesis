@@ -6,7 +6,7 @@ Text segmentation is one of the methods to generate summaries for long inputs. H
 
 We designed an unsupervised topic segmentation algorithm of text using pre-trained GPT2, which makes divide decision based on computing the loss for the next sentence.
 
-We did experiments by reproducing the SUMM^N framework (Now it is opensourced. https://github.com/psunlpgroup/Summ-N) and improving it by applying our topic segmentation method. 
+We did experiments by reproducing the SUMM^N framework (Now it is [opensourced](https://github.com/psunlpgroup/Summ-N)) and improving it by applying our topic segmentation method. 
 
 ## Development Part
 
