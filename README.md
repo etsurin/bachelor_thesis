@@ -8,7 +8,6 @@ We designed an unsupervised topic segmentation algorithm of text using pre-train
 
 We did experiments by reproducing the SUMM^N framework (Now it is [opensourced](https://github.com/psunlpgroup/Summ-N)) and improving it by applying our topic segmentation method. 
 
-Detailed introduction of our proposed method will be soon later.  
 
 ## Development Part
 
