@@ -26,6 +26,9 @@ python call_ui.py
 ```
 Then you will see the following interfaces
 ![image](https://github.com/etsurin/bachelor_thesis/assets/59410307/81a819a2-423c-4780-aa54-66b56daeaa70)
+
 Loading interface
+
 ![image](https://github.com/etsurin/bachelor_thesis/assets/59410307/c09f7039-b79e-4ea0-b9ac-f12c72744e04)
+
 User interface
